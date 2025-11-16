@@ -1,10 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { User } from '../lib/supabase';
 import UserCard from './UserCard';
 
 interface InfiniteCanvasProps {
   users: User[];
   onUserClick: (user: User) => void;
+}
+
+interface UserPosition {
+  x: number;
+  y: number;
 }
 
 export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasProps) {
@@ -14,7 +19,23 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const radius = 400;
+  const userPositions = useMemo(() => {
+    const positions: Record<string, UserPosition> = {};
+    const spread = 1200;
+
+    users.forEach((user) => {
+      const seed = parseInt(user.id.replace(/\D/g, '').substring(0, 8), 16);
+      const angle = ((seed % 360) * Math.PI) / 180;
+      const distance = 300 + ((seed >> 8) % 400);
+
+      positions[user.id] = {
+        x: Math.cos(angle) * distance,
+        y: Math.sin(angle) * distance + (spread / 2 - (seed % spread)),
+      };
+    });
+
+    return positions;
+  }, [users]);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -77,43 +98,17 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
         }}
       >
         <div className="relative" style={{ width: 0, height: 0 }}>
-          <div
-            className="absolute rounded-full border-2 border-cyan-500/30"
-            style={{
-              width: radius * 2,
-              height: radius * 2,
-              left: -radius,
-              top: -radius,
-            }}
-          />
-
-          <div
-            className="absolute rounded-full border border-cyan-400/20"
-            style={{
-              width: (radius * 2) + 100,
-              height: (radius * 2) + 100,
-              left: -radius - 50,
-              top: -radius - 50,
-            }}
-          />
-
-          <div className="absolute w-4 h-4 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50" style={{
-            left: -8,
-            top: -8,
-          }} />
-
           {users.map((user, index) => {
-            const angle = (user.position_angle * Math.PI) / 180;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
+            const pos = userPositions[user.id];
+            if (!pos) return null;
 
             return (
               <div
                 key={user.id}
                 className="absolute"
                 style={{
-                  left: x - 80,
-                  top: y - 80,
+                  left: pos.x - 80,
+                  top: pos.y - 80,
                   animation: `fadeIn 0.5s ease-out ${index * 0.05}s both`,
                 }}
               >
@@ -126,7 +121,7 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
 
       <div className="absolute bottom-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm">
         <p>Scroll to zoom • Drag to pan</p>
-        <p className="text-cyan-400">{users.length} members in the circle</p>
+        <p className="text-cyan-400">{users.length} members floating</p>
       </div>
 
       <style>{`
