@@ -8,29 +8,31 @@ interface UserCardProps {
 export default function UserCard({ user, onClick }: UserCardProps) {
   const colors = [
     'from-blue-500 to-cyan-500',
-    'from-purple-500 to-pink-500',
-    'from-green-500 to-emerald-500',
-    'from-orange-500 to-red-500',
-    'from-yellow-500 to-orange-500',
-    'from-teal-500 to-blue-500',
+    'from-emerald-500 to-teal-500',
+    'from-rose-500 to-pink-500',
+    'from-amber-500 to-orange-500',
+    'from-sky-500 to-blue-500',
+    'from-violet-500 to-purple-500',
   ];
 
   const colorIndex = user.x_username.charCodeAt(0) % colors.length;
   const gradientClass = colors[colorIndex];
 
   return (
-    <div
+    <button
       onClick={onClick}
-      className="w-40 h-40 cursor-pointer group"
+      className="w-40 h-40 cursor-pointer group p-0 border-none bg-transparent"
+      aria-label={`View profile for ${user.x_username}`}
+      tabIndex={0}
     >
-      <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-110">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} rounded-2xl shadow-lg group-hover:shadow-2xl transition-all overflow-hidden`}>
-          <div className="absolute inset-[2px] bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center overflow-hidden">
+      <div className="relative w-full h-full transition-all duration-300 group-hover:scale-125 group-focus-visible:scale-125">
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} rounded-full shadow-lg group-hover:shadow-2xl group-focus-visible:shadow-2xl transition-all overflow-hidden ring-2 ring-transparent group-focus-visible:ring-cyan-400`}>
+          <div className="absolute inset-[3px] bg-slate-900 rounded-full p-4 flex flex-col items-center justify-center overflow-hidden backdrop-blur-sm bg-slate-900/80">
             {user.profile_photo_url ? (
               <img
                 src={user.profile_photo_url}
-                alt={user.x_username}
-                className="w-16 h-16 rounded-full object-cover mb-2 shadow-lg border-2 border-slate-800"
+                alt={`${user.x_username}'s profile photo`}
+                className="w-14 h-14 rounded-full object-cover mb-2 shadow-lg border-2 border-white/20"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'none';
@@ -38,14 +40,14 @@ export default function UserCard({ user, onClick }: UserCardProps) {
               />
             ) : null}
 
-            <h3 className="text-white font-semibold text-sm text-center truncate w-full px-2">
+            <h3 className="text-white font-semibold text-xs text-center truncate w-full px-2">
               @{user.x_username}
             </h3>
 
-            <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/0 rounded-full opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity" />
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
