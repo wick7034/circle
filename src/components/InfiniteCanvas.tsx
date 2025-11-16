@@ -17,6 +17,7 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
   const [zoom, setZoom] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [touchDistance, setTouchDistance] = useState(0);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const userPositions = useMemo(() => {
@@ -44,6 +45,12 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
     setZoom(newZoom);
   };
 
+  const getTouchDistance = (touch1: Touch, touch2: Touch) => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.target === canvasRef.current || (e.target as HTMLElement).closest('.canvas-background')) {
       setIsDragging(true);
@@ -64,6 +71,37 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y });
+    } else if (e.touches.length === 2) {
+      setTouchDistance(getTouchDistance(e.touches[0], e.touches[1]));
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging) {
+      setPan({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y,
+      });
+    } else if (e.touches.length === 2) {
+      const newDistance = getTouchDistance(e.touches[0], e.touches[1]);
+      const delta = (newDistance - touchDistance) * 0.01;
+      const newZoom = Math.min(Math.max(0.3, zoom + delta), 2);
+      setZoom(newZoom);
+      setTouchDistance(newDistance);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setTouchDistance(0);
+  };
+
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false);
     window.addEventListener('mouseup', handleGlobalMouseUp);
@@ -73,11 +111,16 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
   return (
     <div
       ref={canvasRef}
-      className="w-full h-full overflow-hidden cursor-move bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative"
+      className="w-full h-full overflow-hidden cursor-move bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative touch-none"
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      role="application"
+      aria-label="Interactive canvas with user profiles"
     >
       <div className="canvas-background absolute inset-0">
         <div className="absolute inset-0" style={{
@@ -119,8 +162,9 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm">
-        <p>Scroll to zoom • Drag to pan</p>
+      <div className="absolute bottom-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg text-xs md:text-sm backdrop-blur-sm" role="status" aria-live="polite">
+        <p className="hidden md:block">Scroll to zoom • Drag to pan • Pinch to zoom on mobile</p>
+        <p className="md:hidden">Drag to move • Pinch to zoom</p>
         <p className="text-cyan-400">{users.length} members floating</p>
       </div>
 
