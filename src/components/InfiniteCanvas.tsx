@@ -211,7 +211,7 @@ export default function InfiniteCanvas({ users, onUserClick }: InfiniteCanvasPro
       <div className="absolute bottom-4 left-4 bg-black/50 text-white px-4 py-2 rounded-lg text-xs md:text-sm backdrop-blur-sm" role="status" aria-live="polite">
         <p className="hidden md:block">Scroll to zoom • Drag to pan • Pinch to zoom on mobile</p>
         <p className="md:hidden">Drag to move • Pinch to zoom</p>
-        <p className="text-cyan-400">{users.length} members floating</p>
+        
       </div>
 
       <style>{`
