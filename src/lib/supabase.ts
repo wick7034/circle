@@ -11,6 +11,9 @@ export type User = {
   privacy_answer: string;
   created_at: string;
   position_angle: number;
+  profile_photo_url?: string;
+  quiz_score?: number;
+  quiz_total?: number;
 };
 
 export type QuizQuestion = {
