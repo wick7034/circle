@@ -1,3 +1,4 @@
+import { Trophy } from 'lucide-react';
 import { User } from '../lib/supabase';
 
 interface UserCardProps {
@@ -18,6 +19,9 @@ export default function UserCard({ user, onClick }: UserCardProps) {
   const colorIndex = user.x_username.charCodeAt(0) % colors.length;
   const gradientClass = colors[colorIndex];
 
+  const hasQuizScore = user.quiz_score !== undefined && user.quiz_score !== null;
+  const scorePercentage = hasQuizScore && user.quiz_total ? Math.round((user.quiz_score / user.quiz_total) * 100) : 0;
+
   return (
     <button
       onClick={onClick}
@@ -32,7 +36,7 @@ export default function UserCard({ user, onClick }: UserCardProps) {
               <img
                 src={user.profile_photo_url}
                 alt={`${user.x_username}'s profile photo`}
-                className="w-14 h-14 rounded-full object-cover mb-2 shadow-lg border-2 border-white/20"
+                className="w-14 h-14 rounded-full object-cover mb-1 shadow-lg border-2 border-white/20"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'none';
@@ -43,6 +47,15 @@ export default function UserCard({ user, onClick }: UserCardProps) {
             <h3 className="text-white font-semibold text-xs text-center truncate w-full px-2">
               @{user.x_username}
             </h3>
+
+            {hasQuizScore && (
+              <div className="flex items-center gap-1 mt-1">
+                <Trophy className="w-3 h-3 text-yellow-400" />
+                <span className="text-yellow-300 font-semibold text-xs">
+                  {scorePercentage}%
+                </span>
+              </div>
+            )}
 
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/0 rounded-full opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity" />
           </div>

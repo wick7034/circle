@@ -47,7 +47,25 @@ function App() {
       .order('created_at', { ascending: true });
 
     if (data && !error) {
-      setUsers(data);
+      const usersWithScores = await Promise.all(
+        data.map(async (user) => {
+          const { data: attempts } = await supabase
+            .from('quiz_attempts')
+            .select('score, total_questions')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...user,
+            quiz_score: attempts?.score,
+            quiz_total: attempts?.total_questions,
+          };
+        })
+      );
+
+      setUsers(usersWithScores);
     }
   };
 

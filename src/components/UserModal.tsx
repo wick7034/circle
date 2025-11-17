@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Trophy } from 'lucide-react';
 import { useEffect } from 'react';
 import { User } from '../lib/supabase';
 
@@ -25,6 +25,9 @@ export default function UserModal({ user, onClose }: UserModalProps) {
     month: 'long',
     day: 'numeric'
   });
+
+  const hasQuizScore = user.quiz_score !== undefined && user.quiz_score !== null;
+  const scorePercentage = hasQuizScore && user.quiz_total ? Math.round((user.quiz_score / user.quiz_total) * 100) : 0;
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -86,6 +89,24 @@ export default function UserModal({ user, onClose }: UserModalProps) {
           <p className="text-gray-400 text-sm mb-6">
             Joined <time dateTime={new Date(user.created_at).toISOString()}>{joinDate}</time>
           </p>
+
+          {hasQuizScore && (
+            <div className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-xl p-4 border border-yellow-500/30 mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                <span className="text-yellow-300 font-semibold">Privacy Quiz Score</span>
+              </div>
+              <div className="text-3xl font-bold text-yellow-300 mb-1">
+                {user.quiz_score}/{user.quiz_total} ({scorePercentage}%)
+              </div>
+              <div className="text-sm text-yellow-200/80">
+                {scorePercentage === 100 && "Perfect! You're a privacy expert!"}
+                {scorePercentage >= 75 && scorePercentage < 100 && "Excellent! You know your privacy!"}
+                {scorePercentage >= 50 && scorePercentage < 75 && "Good job! Keep learning!"}
+                {scorePercentage < 50 && "Keep exploring Web3 privacy!"}
+              </div>
+            </div>
+          )}
 
           <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
             <h3 className="text-cyan-400 font-semibold text-sm mb-3 uppercase tracking-wide">
