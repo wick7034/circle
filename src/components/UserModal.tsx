@@ -123,7 +123,7 @@ export default function UserModal({ user, onClose }: UserModalProps) {
             rel="noopener noreferrer"
             className="mt-6 w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all block text-center shadow-lg hover:shadow-xl focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
-            View on X (opens new tab)
+            View on X
           </a>
         </div>
       </div>
